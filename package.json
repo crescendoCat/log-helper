@@ -1,0 +1,21 @@
+{
+  "name": "@crescendocat/log-helper",
+  "version": "1.0.0",
+  "description": "A simple log helper that covers console.log and let you customize your log.",
+  "author": "c.crescendo.cat@gmail.com",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "moment": "^2.29.3",
+    "rotating-file-stream": "^3.0.3",
+    "winston": "^3.7.2",
+    "winston-syslog": "^2.5.0"
+  },
+  "devDependencies": {
+    "jest": "^28.0.3"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "bugs": "c.crescendo.cat@gmail.com"
+}
