@@ -72,14 +72,16 @@ const winston = require('winston') // log helper package
 require('winston-syslog').Syslog;
 
 //自定義winston log format。可以使用config.general.logs.timeFormat更改。
-const myFormat = winston.format.printf((info, cfg) => {
-	const formatString = getKey(cfg, "timeFormat", 'DD/MMM/YYYY:HH:mm:ss:SSSS ZZ');
-	const t = moment(info.timestamp).format(formatString)
-	if(info.error)
-		return	`[${t}] ${info.level}: ${info.message}`
-	else 
-		return	`[${t}] ${info.level}: ${info.message} (at ${info.position})`
-})
+const myFormat = (cfg) => {
+	return winston.format.printf((info) => {
+		const formatString = getKey(cfg, "timeFormat", 'DD/MMM/YYYY:HH:mm:ss:SSSS ZZ');
+		const t = moment(info.timestamp).format(formatString)
+		if(info.error)
+			return	`[${t}] ${info.level}: ${info.message}`
+		else 
+			return	`[${t}] ${info.level}: ${info.message} (at ${info.position})`
+	})
+}
 
 
 
@@ -105,7 +107,7 @@ function rotateFileNameGenerator(type, cfg) {
 // create a rotating write stream
 function createRotateStream(type, cfg) {
 	let absolute_log_path = path.resolve(getKey(cfg, `${type}.path`, getKey(cfg, `path`, 'logs')))
-	console.info(`log type \`${type}\` into: ${absolute_log_path}`);
+	if(getKey(cfg, "verbose", false)) console.info(`log type \`${type}\` into: ${absolute_log_path}`);
 	return rfs.createStream(rotateFileNameGenerator(type, cfg), {
 		size: getKey(cfg, `${type}.rotate.size`, '20M'),
 	  interval: getKey(cfg, `${type}.rotate.interval`, '1d'), // rotate daily
@@ -127,7 +129,7 @@ function createLogger(cfg){
 					winston.format((info) => info.level === "error" ? false : info)(), //filter error messages
 					winston.format.padLevels(),
 					winston.format.timestamp(),
-					myFormat
+					myFormat(cfg)
 				),
 			  stream: createRotateStream("infoLog", cfg)
 			}),
@@ -141,7 +143,7 @@ function createLogger(cfg){
 	        winston.format.colorize(),
 	        winston.format.padLevels(),
 	        winston.format.timestamp(),
-	        myFormat
+	        myFormat(cfg)
 	        
 	      ),
 	      stream: process.stdout
@@ -151,7 +153,7 @@ function createLogger(cfg){
 				format: winston.format.combine(
 					winston.format.padLevels(),
 					winston.format.timestamp(),
-					myFormat
+					myFormat(cfg)
 				),
 			  stream: createRotateStream("consoleLog", cfg)
 			}),
@@ -163,7 +165,7 @@ function createLogger(cfg){
 					winston.format.errors(),
 					winston.format.padLevels(),
 					winston.format.timestamp(),
-					myFormat
+					myFormat(cfg)
 				),
 				handleExceptions: true,
 			  stream: createRotateStream("errorLog", cfg)
@@ -175,7 +177,7 @@ function createLogger(cfg){
 	        winston.format.colorize(),
 	        winston.format.padLevels(),
 	        winston.format.timestamp(),
-	        myFormat
+	        myFormat(cfg)
 	      ),
 	      handleExceptions: true,
 	      stream: process.stderr
@@ -186,7 +188,7 @@ function createLogger(cfg){
 					winston.format.errors(),
 					winston.format.padLevels(),
 					winston.format.timestamp(),
-					myFormat
+					myFormat(cfg)
 				),
 				handleExceptions: true,
 				app_name: [getKey(cfg, "syslog.appNamePrefix"), "errorLog"].join("."),
@@ -206,6 +208,11 @@ const log = {
 	 * @return {Boolean}        設定成功與否，成功則會回傳true，否則回傳false
 	 */
   cover: (cfg) => {
+  	//If global._console exists, don't execute cover() twice.
+  	if(global._console) {
+  		if(getKey(cfg, "verbose", false)) console.debug("cover() has been called. Early return.") 
+  		return true;
+  	}
   	const logger = createLogger(cfg);
   	
   	//產生真正要使用的logger
@@ -236,9 +243,9 @@ const log = {
 		try {
 			
 			//replace original global console object with our logger
-			global._console = global.console
+			global._console = global.console;
 			global.console = {
-				...global.console,
+				...Object.assign({}, global.console),
 				...log_wrapper
 			}
 		} catch(e) {
@@ -262,5 +269,6 @@ const log = {
 
 
 module.exports = {
-	log
+	log,
+	...log
 }
