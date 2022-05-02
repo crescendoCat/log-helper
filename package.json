@@ -1,6 +1,6 @@
 {
   "name": "@crescendocat/log-helper",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple log helper that covers console.log and let you customize your log.",
   "author": "c.crescendo.cat@gmail.com",
   "main": "index.js",
@@ -15,8 +15,8 @@
     "jest": "^28.0.3"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/crescendoCat/log-helper.git"
+    "type": "git",
+    "url": "https://github.com/crescendoCat/log-helper.git"
   },
   "scripts": {
     "test": "jest"
