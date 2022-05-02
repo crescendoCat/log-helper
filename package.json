@@ -14,8 +14,15 @@
   "devDependencies": {
     "jest": "^28.0.3"
   },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/crescendoCat/log-helper.git"
+  },
   "scripts": {
     "test": "jest"
   },
-  "bugs": "c.crescendo.cat@gmail.com"
+  "bugs": {
+    "url": "https://github.com/crescendoCat/log-helper/issues",
+    "email": "c.crescendo.cat@gmail.com"
+  }
 }
